@@ -27,11 +27,10 @@ class ViewController: UIViewController, MKMapViewDelegate {
     // MARK: - Properties
     
     var firstCoordinate = CLLocationCoordinate2D(latitude: 50.470135, longitude: 30.631999)
-    var secondCoordinate = CLLocationCoordinate2D(latitude: 0.7, longitude: 0.701225)
+//    var secondCoordinate = CLLocationCoordinate2D(latitude: 0.7, longitude: 0.701225)
     let firstAnnotation = MKPointAnnotation()
     var secondAnnotation = MKPointAnnotation()
     var firstText = "Новая почта"
-    var secondText = ""
     var roadButtonText = "Проложить маршрут"
 
     
@@ -49,17 +48,6 @@ class ViewController: UIViewController, MKMapViewDelegate {
         firstPointTextField.text = firstText
         firstAnnotation.title = firstText
     }
-    
-//    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView?
-//    {
-//        let annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: "annotationView")
-//        annotationView.canShowCallout = true
-//        annotationView.rightCalloutAccessoryView = UIButton.init(type: UIButton.ButtonType.detailDisclosure)
-//
-//        return annotationView
-//    }
-
-    
 
     //MARK: - Helper
     func mapView(_ mapView: MKMapView,rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
@@ -69,13 +57,7 @@ class ViewController: UIViewController, MKMapViewDelegate {
         return renderer
     }
     
-    func addAnnotation(coordinate:CLLocationCoordinate2D, title: String){
-        let annotation = MKPointAnnotation()
-        annotation.coordinate = coordinate
-        annotation.title = title
-        mapView.addAnnotation(annotation)
-    }
-    
+
     func removePoint() {
         mapView.removeAnnotations(mapView.annotations)
     }
@@ -115,15 +97,30 @@ class ViewController: UIViewController, MKMapViewDelegate {
             if placemark.country != nil {country = "\(placemark.country!)"}
             let address = ("\(street)\(streetNum)\(temp)\(city)\(adminArea)\(country)")
             
+
+
             DispatchQueue.main.async {
+                self.firstPointTextField.text = self.firstText
+                self.firstAnnotation.title = self.firstText
                 self.secondPointTextField.text = "\(address)"
-                self.secondText = "\(address)"
+                self.secondAnnotation.title = "\(address)"
             }
+            self.addAnnotation(coordinate: point)
         }
     }
     
+    func addAnnotation(coordinate:CLLocationCoordinate2D){
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = coordinate
+        annotation.title = secondAnnotation.title
+        mapView.addAnnotation(secondAnnotation)
+        mapView.addAnnotation(firstAnnotation)
+    }
+    
+    
+    
     func  route(firstCoordinate: CLLocationCoordinate2D, secondCoordinate: CLLocationCoordinate2D) {
-
+//        removeRoad()
         firstAnnotation.coordinate = firstCoordinate
         secondAnnotation.coordinate = secondCoordinate
         
@@ -155,19 +152,18 @@ class ViewController: UIViewController, MKMapViewDelegate {
     
      // MARK: - Actions
     @IBAction func roadButtonTouchUpInside(_ sender: Any) {
-        removeRoad()
-        route(firstCoordinate: firstCoordinate, secondCoordinate: secondCoordinate)
+        route(firstCoordinate: firstCoordinate, secondCoordinate: secondAnnotation.coordinate)
         firstPointTextField.text = firstText
     }
     
     @IBAction func tapGuesture(_ sender: UITapGestureRecognizer) {
         removePoint()
+        removeRoad()
         if sender.state == .ended{
             let locationInView = sender.location(in: mapView)
             let tappedCoordinate = mapView.convert(locationInView, toCoordinateFrom: mapView)
             geoDecoderName(point: tappedCoordinate)
-            secondCoordinate = tappedCoordinate
-            addAnnotation(coordinate: tappedCoordinate, title: secondText)
+            secondAnnotation.coordinate = tappedCoordinate
         }
     }
 }
